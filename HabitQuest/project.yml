@@ -14,6 +14,14 @@ targets:
       properties:
         UILaunchScreen: {}
         CFBundleDisplayName: HabitQuest
+        UIBackgroundModes:
+          - remote-notification
+    entitlements:
+      path: Generated/HabitQuest.entitlements
+      properties:
+        com.apple.developer.icloud-services: [CloudKit]
+        com.apple.developer.icloud-container-identifiers: ["iCloud.com.andrewkonstand.habitquest"]
+        aps-environment: development
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.andrewkonstand.habitquest

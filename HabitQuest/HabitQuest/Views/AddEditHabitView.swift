@@ -5,6 +5,7 @@ struct AddEditHabitView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var notificationManager: NotificationManager
+    @EnvironmentObject private var cloudKit: CloudKitManager
 
     let habit: Habit?
 
@@ -13,6 +14,7 @@ struct AddEditHabitView: View {
     @State private var colorHex: String
     @State private var weeklyTarget: Int
     @State private var reminderSlots: [ReminderSlot]
+    @State private var isSharedToCircle: Bool
     @State private var newReminderWeekday = 2 // Monday
     @State private var newReminderTime = Date()
 
@@ -23,6 +25,7 @@ struct AddEditHabitView: View {
         _colorHex = State(initialValue: habit?.colorHex ?? "34C759")
         _weeklyTarget = State(initialValue: habit?.weeklyTarget ?? 3)
         _reminderSlots = State(initialValue: habit?.reminderSlots ?? [])
+        _isSharedToCircle = State(initialValue: habit?.isSharedToCircle ?? false)
     }
 
     var body: some View {
@@ -104,6 +107,17 @@ struct AddEditHabitView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+
+                if cloudKit.hasCircle && !cloudKit.needsDisplayName {
+                    Section {
+                        Toggle("Share progress with your Circle", isOn: $isSharedToCircle)
+                        if isSharedToCircle {
+                            Text("Your Circle will see this habit's weekly progress and streak, not your day-by-day log.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
             .navigationTitle(habit == nil ? "New Habit" : "Edit Habit")
             .toolbar {
@@ -131,6 +145,7 @@ struct AddEditHabitView: View {
         targetHabit.colorHex = colorHex
         targetHabit.weeklyTarget = weeklyTarget
         targetHabit.reminderSlots = reminderSlots
+        targetHabit.isSharedToCircle = isSharedToCircle
 
         if reminderSlots.isEmpty {
             notificationManager.cancelReminders(for: targetHabit)
@@ -142,6 +157,13 @@ struct AddEditHabitView: View {
                     notificationManager.scheduleReminders(for: targetHabit)
                 }
             }
+        }
+
+        if isSharedToCircle {
+            Task { await cloudKit.publishMyGoal(habit: targetHabit) }
+        } else {
+            let habitID = targetHabit.id
+            Task { await cloudKit.removeMyGoal(habitID: habitID) }
         }
 
         dismiss()

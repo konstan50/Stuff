@@ -11,6 +11,7 @@ final class Habit {
     var reminderSlots: [ReminderSlot]
     var createdAt: Date
     var sortOrder: Int
+    var isSharedToCircle: Bool
 
     @Relationship(deleteRule: .cascade, inverse: \HabitCompletion.habit)
     var completions: [HabitCompletion] = []
@@ -21,7 +22,8 @@ final class Habit {
         colorHex: String = "34C759",
         weeklyTarget: Int = 3,
         reminderSlots: [ReminderSlot] = [],
-        sortOrder: Int = 0
+        sortOrder: Int = 0,
+        isSharedToCircle: Bool = false
     ) {
         self.id = UUID()
         self.name = name
@@ -31,6 +33,7 @@ final class Habit {
         self.reminderSlots = reminderSlots
         self.createdAt = .now
         self.sortOrder = sortOrder
+        self.isSharedToCircle = isSharedToCircle
     }
 }
 

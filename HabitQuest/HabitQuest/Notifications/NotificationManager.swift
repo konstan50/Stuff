@@ -79,6 +79,18 @@ final class NotificationManager: NSObject, ObservableObject {
         }
     }
 
+    /// Displays a notification banner right away — used to surface a silent
+    /// CloudKit push (new circle message, a friend hitting their goal) as a
+    /// visible alert.
+    func presentImmediateNotification(title: String, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        center.add(request)
+    }
+
     func cancelReminders(for habit: Habit, then completion: @escaping () -> Void = {}) {
         let prefix = "\(identifierPrefix)\(habit.id.uuidString)-"
         center.getPendingNotificationRequests { [weak self] requests in

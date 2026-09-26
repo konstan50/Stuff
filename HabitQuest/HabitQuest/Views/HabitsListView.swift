@@ -73,6 +73,10 @@ struct HabitsListView: View {
 
     private func delete(_ habit: Habit) {
         NotificationManager.shared.cancelReminders(for: habit)
+        if habit.isSharedToCircle {
+            let habitID = habit.id
+            Task { await CloudKitManager.shared.removeMyGoal(habitID: habitID) }
+        }
         context.delete(habit)
     }
 }

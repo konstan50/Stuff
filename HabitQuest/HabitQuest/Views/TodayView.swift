@@ -3,6 +3,7 @@ import SwiftData
 
 struct TodayView: View {
     @Environment(\.modelContext) private var context
+    @EnvironmentObject private var cloudKit: CloudKitManager
     @Query(sort: \Habit.sortOrder) private var habits: [Habit]
 
     var body: some View {
@@ -28,6 +29,9 @@ struct TodayView: View {
             guard let habitID = note.object as? UUID,
                   let habit = habits.first(where: { $0.id == habitID }) else { return }
             habit.markDoneToday(context: context)
+            if habit.isSharedToCircle {
+                Task { await cloudKit.publishMyGoal(habit: habit) }
+            }
         }
     }
 }
@@ -35,6 +39,7 @@ struct TodayView: View {
 private struct HabitTodayRow: View {
     @Bindable var habit: Habit
     @Environment(\.modelContext) private var context
+    @EnvironmentObject private var cloudKit: CloudKitManager
 
     private var summary: PointsEngine.Summary { PointsEngine.summarize(habit: habit) }
 
@@ -64,6 +69,9 @@ private struct HabitTodayRow: View {
 
             Button {
                 withAnimation { habit.toggleCompletion(on: .now, context: context) }
+                if habit.isSharedToCircle {
+                    Task { await cloudKit.publishMyGoal(habit: habit) }
+                }
             } label: {
                 Image(systemName: habit.isCompleted(on: .now) ? "checkmark.circle.fill" : "circle")
                     .font(.title)

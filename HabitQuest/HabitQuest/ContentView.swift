@@ -7,6 +7,8 @@ struct ContentView: View {
                 .tabItem { Label("Today", systemImage: "sun.max.fill") }
             HabitsListView()
                 .tabItem { Label("Habits", systemImage: "list.bullet") }
+            CircleView()
+                .tabItem { Label("Circle", systemImage: "person.3.fill") }
             RewardsView()
                 .tabItem { Label("Rewards", systemImage: "trophy.fill") }
         }

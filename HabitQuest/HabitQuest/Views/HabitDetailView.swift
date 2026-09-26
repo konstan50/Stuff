@@ -6,6 +6,7 @@ struct HabitDetailView: View {
     @Bindable var habit: Habit
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var cloudKit: CloudKitManager
     @State private var showingEdit = false
 
     private var summary: PointsEngine.Summary { PointsEngine.summarize(habit: habit) }
@@ -84,9 +85,16 @@ struct HabitDetailView: View {
             Section {
                 Button("Mark Done for Today") {
                     habit.toggleCompletion(on: .now, context: context)
+                    if habit.isSharedToCircle {
+                        Task { await cloudKit.publishMyGoal(habit: habit) }
+                    }
                 }
                 Button("Delete Habit", role: .destructive) {
                     NotificationManager.shared.cancelReminders(for: habit)
+                    if habit.isSharedToCircle {
+                        let habitID = habit.id
+                        Task { await cloudKit.removeMyGoal(habitID: habitID) }
+                    }
                     context.delete(habit)
                     dismiss()
                 }
